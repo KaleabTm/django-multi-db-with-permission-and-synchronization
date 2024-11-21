@@ -11,17 +11,13 @@ class LoginView(APIView):
         password = serializers.CharField()
 
     def post(self, request):
-        # Deserialize the request data
         serializer = self.InputSerializer(data=request.data)
         
-        # Validate the input
         if serializer.is_valid():
-            # Get the validated data
             data = serializer.validated_data
             email = data['email']
             password = data['password']
-            
-            # Authenticate the user
+        
             user = authenticate(request, username=email, password=password)
 
             if user is not None:
@@ -34,8 +30,6 @@ class LoginView(APIView):
         else:
             # Invalid data
             return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 class LogoutView(APIView):
     def post(self, request):

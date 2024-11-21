@@ -1,4 +1,6 @@
+from django.db import transaction
 from django.contrib.auth.models import Group, Permission
+from django.forms import ValidationError
 from departments.models import Department, JobTitle
 
 
@@ -35,32 +37,36 @@ def jobtitle_create(
     department_instance, created = Department.objects.get_or_create(department_name=department)
 
     # Create the JobTitle object
-    position = JobTitle.objects.create(
+    position = JobTitle(
         title=title,
         department=department_instance,
     )
 
-    # Clean the position object (validate fields)
-    position.full_clean()
+    try:
+        # Clean the position object (validate fields)
+        position.full_clean()  # This will raise ValidationError if there are issues
+    except ValidationError as e:
+        raise ValueError(f"JobTitle creation failed due to validation error: {e}")
 
-    # Create or get the group (used for permissions)
-    group, created = Group.objects.get_or_create(name=title)
+    # Start a transaction to ensure atomicity
+    with transaction.atomic():
+        # Create or get the group (used for permissions)
+        group, created = Group.objects.get_or_create(name=title)
 
-    # Assign permissions to the group
-    for perm in permissions:
-        try:
-            permission = Permission.objects.get(codename=perm)
-            group.permissions.add(permission)
-        except Permission.DoesNotExist:
-            print(f"Permission '{perm}' does not exist.")
+        # Assign permissions to the group
+        if permissions:
+            for perm in permissions:
+                try:
+                    permission = Permission.objects.get(codename=perm)
+                    group.permissions.add(permission)
+                except Permission.DoesNotExist:
+                    raise ValueError(f"Permission '{perm}' does not exist.")
+        
+        # Save the group with the new permissions
+        group.save()
 
-    # Save the group with the new permissions
-    group.save()
-
-    # Save the job title
-    position.save()
+        # Save the job title
+        position.save()
 
     return position
-
-
 

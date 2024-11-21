@@ -22,10 +22,8 @@ class DepartmentCreateView(APIView):
         serializer = self.InputSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Extract the validated data
             data = serializer.validated_data
 
-            # Call the department_create function to create the department
             department = department_create(
                 department_name=data['department_name'],
                 description=data['description'],
@@ -47,7 +45,7 @@ class JobTitleCreateView(APIView):
 
     def post(self,request):
         serializer_class = self.InputSerializers
-        input_vaidate = serializer_class.validated_data()
+        input_vaidate = serializer_class.validated_data
 
         if input_vaidate:
             jobtitle_create(serializer_class.data)

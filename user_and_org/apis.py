@@ -17,7 +17,7 @@ class UserCreateView(APIView):
         password = serializers.CharField()
 
     def post(self,request):
-        serializer_class = self.InputSerializer(request.data)
+        serializer_class = self.InputSerializer(data=request.data)
 
         if serializer_class.is_valid():
             ...
@@ -45,11 +45,11 @@ class UserOrgCreateView(APIView):
         is_active = serializers.BooleanField()
 
     def post(self,request):
-        serializer_class = self.InputSerializer(request.data)
+        serializer_class = self.InputSerializer(data=request.data)
 
         if serializer_class.is_valid():
 
-            data = serializer_class.validated_data()
+            data = serializer_class.validated_data
 
             relation=user_org_relation(
                 user=data['user'],
