@@ -33,7 +33,7 @@ class DepartmentCreateView(APIView):
             is_active=data['is_active']
         )
 
-        return Response(department, status=status.HTTP_201_CREATED)   
+        return Response(serializer.data, status=status.HTTP_201_CREATED)   
 
 
 class JobTitleCreateView(APIView):

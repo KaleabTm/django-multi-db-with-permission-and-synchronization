@@ -17,6 +17,7 @@ class DepartmentAdmin(admin.ModelAdmin):
         (None, {'fields': ('department_name',)}),
         ('Department Info', {'fields':('description',)}),
         ('Contacts',{'fields': ('contact_phone', 'contact_email')}),
+        ('Activity',{'fields': ('is_active',)}),
 
     )
 

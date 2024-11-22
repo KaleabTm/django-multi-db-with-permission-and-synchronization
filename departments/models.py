@@ -9,7 +9,7 @@ class Department(BaseModel):
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
     contact_phone = models.PositiveBigIntegerField(blank=True, null=True, verbose_name=_("Contact Phone"))
     contact_email = models.EmailField(blank=True, null=True, verbose_name=_("Contact Email"))
-    is_acitve = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True,verbose_name=_("Is Active"))
 
     def __str__(self):
         return f"{self.department_name}"

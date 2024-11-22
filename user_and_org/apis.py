@@ -10,7 +10,7 @@ from departments.models import JobTitle
 # Create your views here.
 
 class UserCreateView(APIView):
-    class UserSerializer(serializers.Serializer):
+    class InputSerializer(serializers.Serializer):
         first_name = serializers.CharField()
         last_name = serializers.CharField()
         phone_number = serializers.CharField()
@@ -18,7 +18,7 @@ class UserCreateView(APIView):
         password = serializers.CharField()
 
     def post(self,request):
-        serializer_class = self.UserSerializer(data=request.data)
+        serializer_class = self.InputSerializer(data=request.data)
 
         if not serializer_class.is_valid():
             print("Validation Errors:", serializer_class.errors)  # Log for debugging
@@ -34,9 +34,8 @@ class UserCreateView(APIView):
                 password=hashed_password,
                 phone_number=data['phone_number'],
             )
-        user_serialized = self.UserSerializer(user)
 
-        return Response(user_serialized.data, status=status.HTTP_201_CREATED)
+        return Response(serializer_class.data, status=status.HTTP_201_CREATED)
         
 
 
