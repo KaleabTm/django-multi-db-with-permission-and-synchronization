@@ -1,6 +1,9 @@
 from .models import Post
 from employees.models import Employees
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import get_user_model
+
+Employee = get_user_model()
 
 def create_post(
         *,
@@ -8,7 +11,7 @@ def create_post(
         content=str,
         author,
 )-> Post:
-    post_author = Employees.objects.get(email=author.email)
+    post_author = Employee.objects.get(email=author.email)
     post = Post.objects.create(
         title=title,
         content=content,

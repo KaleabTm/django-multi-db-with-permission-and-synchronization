@@ -11,10 +11,10 @@ class OurOrganizations(BaseModel):
     org_domain = models.CharField(max_length=200, blank=True, null=True)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
-    # departments=
 
     class Meta:
         verbose_name = ('Organization')
+        ordering = ('org_name',)
         db_table = 'organizations_ourorganizations'
 
     def __str__(self):

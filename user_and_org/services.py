@@ -6,8 +6,7 @@ def create_users(
         last_name=str,
         email=str,
         password=str,
-        phone_number=str, 
-        is_active=bool,      
+        phone_number=str,      
     )-> Users:
     user = Users.objects.create(
 
@@ -16,7 +15,6 @@ def create_users(
         email=email,
         password=password,
         phone_number=phone_number,
-        is_active=True,
     )
 
     user.full_clean()
@@ -35,8 +33,8 @@ def user_org_relation(
         position=str,
         is_active=bool,
 )-> UsersOrgs:
-    org=Organizations.objects.get(org_name=organization.name)
-    u = Users.objects.get(email=user.email)
+    org=Organizations.objects.get(org_name=organization)
+    u = Users.objects.get(email=user)
     personel = UsersOrgs.objects.create(
         user=u,
         organization=org,
@@ -47,3 +45,5 @@ def user_org_relation(
     personel.full_clean()
 
     personel.save()
+
+    return personel

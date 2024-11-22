@@ -18,23 +18,25 @@ class PostCreateView(APIView):
     def post(self,request):
         serializer_class = self.InputSerializer(data=request.data)
 
-        if serializer_class.is_valid():
-            data = serializer_class.validated_data
+        if not serializer_class.is_valid():
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if not request.user.has_perm('posts.can_create_post'):
-                return Response(
-                    {'error': 'You do not have permission to create posts.'},
-                    status=status.HTTP_403_FORBIDDEN,
+        data = serializer_class.validated_data
+
+        if not request.user.has_perm('posts.can_create_post'):
+            return Response(
+                {'error': 'You do not have permission to create posts.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        post = create_post(
+                title=data['title'],
+                content=data['content'],
+                author=request.user
                 )
-
-            post = create_post(
-                    title=data['title'],
-                    content=data['content'],
-                    author=request.user
-                    )
-            output_serializer = self.OutputSerializer(post)
-            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_class.error_messages, status=status.HTTP_400_BAD_REQUEST)
+        output_serializer = self.OutputSerializer(post)
+        
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PostView(APIView):
@@ -48,24 +50,22 @@ class PostView(APIView):
     def get(self, request):
         serializer_class = self.InputSerializer(data=request.data)
 
-        if serializer_class.is_valid():
+        if not serializer_class.is_valid():
+            print("Validation Errors:", serializer_class.errors)  # Log for debugging
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            data = serializer_class.validated_data
-            title = data['title']
+        data = serializer_class.validated_data
+        title = data['title']
 
-            post = get_post(title)
+        post = get_post(title)
 
-            if post:
-                if not request.user.has_perm('can_view_post', post):
-                    return Response({'error': 'You do not have permission to view this post'}, status=status.HTTP_403_FORBIDDEN)
+        if post:
+            if not request.user.has_perm('can_view_post', post):
+                return Response({'error': 'You do not have permission to view this post'}, status=status.HTTP_403_FORBIDDEN)
 
-                post_instance = self.OutputSerializer(post)
-                return Response(post_instance.data, status=status.HTTP_200_OK)
-            else:
-                # If no post is found
-                return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+            post_instance = self.OutputSerializer(post)
+            return Response(post_instance.data, status=status.HTTP_200_OK)
         else:
-            # If serializer is invalid (although unlikely in this case)
-            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)        
+            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)    
 
 

@@ -1,17 +1,20 @@
 from django.db import models
 
 from common.models import BaseModel
-from employees.models import Employees
+from django.contrib.auth import get_user_model
+
+Employee = get_user_model()
 
 # Create your models here.
 class Post(BaseModel):
     title = models.CharField(max_length=255)
     content = models.TextField()
-    author = models.ForeignKey(Employees, on_delete=models.PROTECT)
+    author = models.ForeignKey(Employee, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = 'Post'
         verbose_name_plural = 'Posts'
+        ordering = ('title',)
         permissions = [
             ('can_edit_post', 'Can Edit Post'),
             ('can_create_post', 'Can Create Post'),

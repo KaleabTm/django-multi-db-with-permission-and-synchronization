@@ -24,6 +24,7 @@ class Employees(AbstractUser,BaseModel):
     class Meta:
         verbose_name = ('Employee')
         verbose_name_plural = ('Employees')
+        ordering = ('first_name', )
 
     def __str__(self):
         return self.email

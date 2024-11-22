@@ -3,13 +3,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
-
-from user_and_org.services import create_users, user_org_relation
+from django.contrib.auth.hashers import make_password
+from .services import create_users, user_org_relation
+from departments.models import JobTitle
 
 # Create your views here.
 
 class UserCreateView(APIView):
-    class InputSerializer(serializers.Serializer):
+    class UserSerializer(serializers.Serializer):
         first_name = serializers.CharField()
         last_name = serializers.CharField()
         phone_number = serializers.CharField()
@@ -17,27 +18,29 @@ class UserCreateView(APIView):
         password = serializers.CharField()
 
     def post(self,request):
-        serializer_class = self.InputSerializer(data=request.data)
+        serializer_class = self.UserSerializer(data=request.data)
 
-        if serializer_class.is_valid():
-            ...
-            data = serializer_class.validated_data
+        if not serializer_class.is_valid():
+            print("Validation Errors:", serializer_class.errors)  # Log for debugging
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            user = create_users(
+        data = serializer_class.validated_data
+        hashed_password = make_password(data['password'])
+
+        user = create_users(
                 first_name=data['first_name'],
                 last_name=data['last_name'],
                 email=data['email'],
-                password=data['password'],
-                phone_number=data['phone_number']
+                password=hashed_password,
+                phone_number=data['phone_number'],
             )
+        user_serialized = self.UserSerializer(user)
 
-            return Response(user, status=status.HTTP_201_CREATED)
+        return Response(user_serialized.data, status=status.HTTP_201_CREATED)
         
-        # If data is not valid, return errors
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)  
 
 
-class UserOrgCreateView(APIView):
+class UserOrgRelationCreateView(APIView):
     class InputSerializer(serializers.Serializer):
         user = serializers.CharField()
         organization = serializers.CharField()
@@ -47,20 +50,20 @@ class UserOrgCreateView(APIView):
     def post(self,request):
         serializer_class = self.InputSerializer(data=request.data)
 
-        if serializer_class.is_valid():
+        if not serializer_class.is_valid():
+            print("Validation Errors:", serializer_class.errors)  # Log for debugging
+            return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            data = serializer_class.validated_data
+        data = serializer_class.validated_data
 
-            relation=user_org_relation(
-                user=data['user'],
-                organization=data['organization'],
-                position=data['position'],
-                is_active=data['is_active']
-            )
+        position = JobTitle.objects.get(title=data['position'])
 
-            return Response(relation,status=status.HTTP_201_CREATED)
+        relation=user_org_relation(
+            user=data['user'],
+            organization=data['organization'],
+            position=position,
+            is_active=data['is_active']
+        )
 
-        return Response(serializer_class.error_messages,status=status.HTTP_400_BAD_REQUEST)
-
-
+        return Response(f"User {relation.user.first_name} is assigned {relation.position} positon at {relation.organization.org_name}",status=status.HTTP_201_CREATED)
 

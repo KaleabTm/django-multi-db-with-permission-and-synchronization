@@ -26,7 +26,7 @@ class Department(BaseModel):
 
 
 class JobTitle(BaseModel):
-    department = models.ForeignKey(Department, on_delete=models.PROTECT)
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True)
     title = models.CharField(max_length=255, verbose_name=_("Job Title"))
 
     def __str__(self):
